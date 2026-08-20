@@ -8,6 +8,10 @@
 <meta property="og:title" content="雷宇轩 · 数据策略 AI 产品经理">
 <meta property="og:description" content="AI 产品的护城河不在模型，在数据。健康 AI 数据产品、大模型评测体系、开源工程方法论。">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://plutolei.github.io/">
+<meta property="og:image" content="https://plutolei.github.io/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://plutolei.github.io/assets/og.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d1117'/%3E%3Ctext x='6' y='22' font-family='monospace' font-size='15' fill='%233fb950'%3E%26gt;_%3C/text%3E%3C/svg%3E">
 <script>
   /* 开机仪式前置判定：回访、深链、无障碍偏好三者任一 → 直接跳过仪式 */
@@ -69,20 +73,19 @@
   .hero-claim { transition: opacity 0.6s ease 0.2s; }
   .intro .t-line { visibility: hidden; }
 
-  .boot-cta {
-    margin-top: 26px; text-align: center;
-    font-size: 0.88rem; color: var(--muted);
-    opacity: 0; transition: opacity 0.5s ease;
-    pointer-events: none;
+  .boot-skip {
+    position: fixed; right: 18px; bottom: 16px; z-index: 40;
+    font-size: 0.78rem; color: var(--faint);
+    padding: 6px 14px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: rgba(250, 250, 249, 0.85);
+    cursor: pointer;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease, color 0.2s;
   }
-  .boot-cta.visible { opacity: 1; pointer-events: auto; cursor: pointer; }
-  .boot-cta .key {
-    display: inline-block; padding: 1px 8px; margin: 0 2px;
-    border: 1px solid var(--border); border-bottom-width: 2px;
-    border-radius: 5px; background: var(--surface);
-    font-size: 0.8rem; color: var(--text);
-  }
-  html:not(.intro) .boot-cta { display: none; }
+  .boot-skip.visible { opacity: 1; pointer-events: auto; }
+  .boot-skip:hover { color: var(--accent); border-color: var(--accent); }
+  html:not(.intro) .boot-skip { display: none; }
 
   .term.settling {
     transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
@@ -333,7 +336,7 @@
       <div class="t-line" data-type="end"><span class="prompt">$</span><span class="cursor" id="heroCursor"></span></div>
     </div>
   </div>
-  <div class="boot-cta" id="bootCta">按 <span class="key mono">Enter</span> 或点击终端启动</div>
+  <div class="boot-skip mono" id="bootSkip" role="button" tabindex="0">点击跳过</div>
   <p class="hero-claim">核心判断：<b>AI 产品的护城河不在模型，在数据。</b>这个判断在生产环境落成过实践：评测体系 0→1、多源数据污染根治、评分算法从 spec 到上线。</p>
 </header>
 
@@ -457,7 +460,7 @@
   <div class="repo-featured reveal">
     <div class="repo-head">
       <span class="repo-name mono">paperbanana-skill</span>
-      <span class="repo-star">★ 47</span>
+      <span class="repo-star" data-stars="PlutoLei/paperbanana-skill">★ 47</span>
       <span class="repo-lang mono">TypeScript</span>
     </div>
     <p>生成出版级学术插图的 Claude Code skill，从研究论文原型运营成持续迭代的开源产品。</p>
@@ -484,7 +487,7 @@
     <div class="repo reveal">
       <div class="repo-head">
         <span class="repo-name mono">TextMamba3D</span>
-        <span class="repo-star">★ 4</span>
+        <span class="repo-star" data-stars="PlutoLei/TextMamba3D">★ 4</span>
         <span class="repo-lang mono">Python</span>
       </div>
       <p>统一 Mamba 架构文本引导 3D 脑肿瘤分割，214 项单元测试，详见研究部分。</p>
@@ -578,6 +581,7 @@
       <div><span class="prompt">$</span><span class="cmd">cat contact.md</span></div>
       <div class="out">邮箱：<a href="mailto:YUXUAN032@e.ntu.edu.sg">YUXUAN032@e.ntu.edu.sg</a></div>
       <div class="out">GitHub：<a href="https://github.com/PlutoLei" target="_blank" rel="noopener">github.com/PlutoLei</a></div>
+      <div class="out">简历：完整版邮件索取</div>
       <div>&nbsp;</div>
       <div><span class="prompt">$</span><span class="cmd">exit</span></div>
       <div class="out proc">[Process completed]</div>
@@ -610,7 +614,7 @@
   // 状态机：typing（可任意键/点击快进）→ ready（Enter/点击启动）→ launching（进度条+zoom 转场）→ done
   var term = document.getElementById("hero-term");
   var termBody = document.getElementById("termBody");
-  var cta = document.getElementById("bootCta");
+  var skipBtn = document.getElementById("bootSkip");
   var lines = Array.prototype.slice.call(term.querySelectorAll(".t-line"));
   var phase = intro ? "typing" : "done";
   var timers = [];
@@ -637,7 +641,7 @@
     phase = "ready";
     clearTimers();
     showAllLines();
-    cta.classList.add("visible");
+    later(launch, 800);
   }
 
   // 打字节奏：字符间 35-85ms 随机抖动（真人手感）；命令敲完停 160ms（回车感）；
@@ -680,7 +684,6 @@
   function launch() {
     if (phase !== "ready") return;
     phase = "launching";
-    cta.classList.remove("visible");
     var heroCursor = document.getElementById("heroCursor");
     var endLine = lines[lines.length - 1];
     var cmdSpan = document.createElement("span");
@@ -718,16 +721,18 @@
     timers.push(t);
   }
 
-  function settle() {
+  // 释放布局：FLIP 让终端从旧位滑进常驻位，内容在下方浮现
+  function release(appendPrompt) {
     phase = "done";
     markVisited();
-    // 命令执行完，shell 回到新提示符
-    var fresh = document.createElement("div");
-    fresh.className = "t-line";
-    fresh.style.visibility = "visible";
-    fresh.innerHTML = '<span class="prompt">$</span><span class="cursor"></span>';
-    termBody.appendChild(fresh);
-    // FLIP：记录终端当前位置，释放布局，让它从旧位滑进常驻位，内容在下方浮现
+    if (appendPrompt) {
+      // 命令执行完，shell 回到新提示符
+      var fresh = document.createElement("div");
+      fresh.className = "t-line";
+      fresh.style.visibility = "visible";
+      fresh.innerHTML = '<span class="prompt">$</span><span class="cursor"></span>';
+      termBody.appendChild(fresh);
+    }
     var r1 = term.getBoundingClientRect();
     root.classList.remove("intro");
     window.scrollTo(0, 0);
@@ -742,7 +747,17 @@
     }
   }
 
+  function settle() { release(true); }
+
+  function skipAll() {
+    if (phase === "done") return;
+    clearTimers();
+    showAllLines();
+    release(false);
+  }
+
   if (intro) {
+    skipBtn.classList.add("visible");
     typeSequence();
     document.addEventListener("keydown", function (e) {
       if (phase === "typing" && e.key !== "Enter") enterReady();
@@ -753,7 +768,10 @@
       if (phase === "typing") enterReady();
       else if (phase === "ready") launch();
     });
-    cta.addEventListener("click", launch);
+    skipBtn.addEventListener("click", skipAll);
+    skipBtn.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); skipAll(); }
+    });
   } else {
     // 回访/深链/无障碍：完全静态呈现，不再重演任何动画
     markVisited();
@@ -767,6 +785,18 @@
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goTop(); }
   });
 
+  // ===== star 数实时化：静默拉 GitHub API，失败保持静态兜底 =====
+  document.querySelectorAll("[data-stars]").forEach(function (el) {
+    var ctrl = new AbortController();
+    setTimeout(function () { ctrl.abort(); }, 4000);
+    fetch("https://api.github.com/repos/" + el.dataset.stars, { signal: ctrl.signal })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (j && typeof j.stargazers_count === "number") el.textContent = "★ " + j.stargazers_count;
+      })
+      .catch(function () {});
+  });
+
   // ===== 滚动浮现 =====
   var io = new IntersectionObserver(function (entries) {
     entries.forEach(function (e) {
@@ -776,6 +806,10 @@
   document.querySelectorAll(".reveal").forEach(function (el) { io.observe(el); });
 })();
 </script>
+
+<!-- 访问统计（GoatCounter）：注册 goatcounter.com 拿到 site code 后，取消注释并把 SITECODE 换成你的 code
+<script data-goatcounter="https://SITECODE.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+-->
 
 </body>
 </html>

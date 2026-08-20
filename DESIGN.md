@@ -41,11 +41,11 @@
 状态机 `typing → ready → launching → done`：
 
 1. **typing**：命令逐字符敲出（字符间 35-85ms 随机抖动），光标跟随；输出行瞬时出现，命令敲完停 160ms 模拟回车。
-2. **ready**：出现「按 Enter 或点击终端启动」。
+2. **ready**：短停 0.8s 后**自动启动**（不设 Enter 门——门的成本会砸在首访 HR 头上）；Enter/点击可提前。
 3. **launching**：提示符自动敲入 `open ~/portfolio` → ASCII 进度条 → shell 回到新提示符。
 4. **done**：FLIP 让终端滑入常驻位，内容在下方展开。叙事必须闭合：命令打开的就是本页。
 
-**skip 路径（不可删）**：回访（localStorage `lyx_site_visited`）、带 hash 深链、`prefers-reduced-motion` 三者任一 → 完全静态直出，不锁滚动；typing 期间任意键/点击 → 立即完成。`?boot` 查询参数强制重演仪式（调试用）。
+**skip 路径（不可删）**：回访（localStorage `lyx_site_visited`）、带 hash 深链、`prefers-reduced-motion` 三者任一 → 完全静态直出，不锁滚动；仪式全程右下角常驻「点击跳过」按钮，点了直达内容；typing 期间任意键/点击终端 → 快进。`?boot` 查询参数强制重演仪式（调试用）。
 
 ## 6. 布局纪律
 
@@ -61,7 +61,7 @@
 2. **证据闸**：每个上站数字必须可溯源到公开可验证的来源（GitHub、公开 README、已发布产物）。溯源对照表在私有台账。
 3. **文字闸**：零 em-dash；逐条重读可见文案，绕嘴/解释腔/AI 腔改掉。
 4. **无障碍闸**：`prefers-reduced-motion` 全覆盖；对比度 WCAG AA；仪式必须有 skip 路径；键盘可达（`./restart` 有 tabindex）。
-5. **技术闸**：内联 JS 过 `node --check`；无外链依赖（字体、JS、CSS 全内联或同仓）；单页总重克制。
+5. **技术闸**：内联 JS 过 `node --check`；无外链依赖（字体、JS、CSS 全内联或同仓）；单页总重克制。**仅有两条豁免**：① star 数向 api.github.com 的静默 fetch（失败保持静态兜底，页面功能零依赖它）；② GoatCounter 访问统计脚本（async，加载失败不影响页面）。不再新增第三条豁免。
 
 ## 8. 发布
 
